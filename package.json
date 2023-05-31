@@ -1,0 +1,62 @@
+{
+  "name": "alttextapp",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "watch": "webpack --watch",
+    "build": "webpack",
+    "start": "react-scripts start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/19khowes/AltTextApp.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/19khowes/AltTextApp/issues"
+  },
+  "homepage": "https://github.com/19khowes/AltTextApp#readme",
+  "dependencies": {
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
+    "@fontsource/roboto": "^4.5.8",
+    "@fortawesome/fontawesome-svg-core": "^6.4.0",
+    "@fortawesome/free-solid-svg-icons": "^6.4.0",
+    "@fortawesome/react-fontawesome": "^0.2.0",
+    "@instructure/ui": "^8",
+    "@mui/icons-material": "^5.11.16",
+    "@mui/material": "^5.12.1",
+    "@mui/styled-engine-sc": "^5.12.0",
+    "axios": "^1.3.4",
+    "cheerio": "^1.0.0-rc.12",
+    "dompurify": "^2.3.8",
+    "puppeteer": "^19.9.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.0",
+    "react-router-dom": "^6.3.0",
+    "react-scripts": "^5.0.1",
+    "scripts": "^0.1.0",
+    "styled-components": "^5.3.9"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.17.9",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-react": "^7.16.7",
+    "babel-loader": "^8.2.4",
+    "babel-preset-env": "^1.7.0",
+    "html-webpack-plugin": "^5.5.0",
+    "process": "^0.11.10",
+    "regenerator-runtime": "^0.13.9",
+    "replace-in-file-webpack-plugin": "^1.0.6",
+    "webpack": "5.73.0",
+    "webpack-cli": "4.10.0",
+    "webpack-dev-server": "^4.9.3"
+  }
+}

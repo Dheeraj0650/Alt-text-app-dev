@@ -1,0 +1,110 @@
+html, body, #react-container{
+    height: 100%;
+}
+@media only screen and (min-width: 1200px) {
+    #div1{
+        width: 49%;
+        float: left;
+    }
+    
+    #div2{
+        width: 50%;
+        float: right;
+    }
+}
+
+.fa-solid, .fa-regular{
+    float: right;
+    padding-right: 5rem;
+    padding-top: 1rem;
+    z-index:5;
+}
+
+.fa-regular{
+    padding-left: 4rem;
+    
+}
+
+.fa-solid:hover{
+    color: #E7B10A;
+}
+
+.fa-regular:hover{
+    color: #E7B10A;
+}
+
+#page-content{
+    height: 650px; 
+    overflow-y: scroll;
+}
+
+
+hr {
+    border: 0;
+    height: 1px;
+    background: #c0c0c0;
+    background-image: linear-gradient(to right, #d8d8d8, #c0c0c0, #d8d8d8);
+}
+
+.space-children > * {
+    margin-top: 15px !important;
+    margin-right: 10px !important;
+}
+
+.space-children {
+    margin-left: 10px;
+}
+
+.center {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
+}
+
+#context-next-btn {
+    float: right
+}
+
+#context-nav {
+    padding-top: 2px;
+}
+
+#context-nav > button {
+    padding-top: 5px;
+}
+
+@media only screen and (min-width: 301px) {
+    #main-image {
+        max-height: 400px;
+        max-width: 100%;
+    }
+}
+
+@media only screen and (max-width: 300px) {
+    #main-image {
+        height: 200px;
+        width: auto;
+    }
+}
+
+@media only screen and (min-width: 32rem) {
+    #alt-text-input {
+        min-width: 30rem;
+    }
+}
+
+.alert-container, .buttonGroup{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.avatar-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}

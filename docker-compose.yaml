@@ -1,0 +1,48 @@
+version: '3.8'
+services:
+  php-server:
+    container_name: php-server
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    depends_on:
+      - mysql
+    volumes:
+      - .:/app
+      - node-modules:/app/node_modules
+      - build:/app/build
+    ports:
+      - 8000:8000
+
+  mysql:
+    container_name: mysql
+    image: mariadb:10.3
+    restart: always
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - .docker/db_schema.sql:/docker-entrypoint-initdb.d/db_schema.sql
+    environment:
+        MYSQL_ROOT_PASSWORD: MYSQL_ROOT_PASSWORD
+        MYSQL_DATABASE: alt_text_app
+        MYSQL_USER: MYSQL_USER
+        MYSQL_PASSWORD: MYSQL_PASSWORD
+    ports:
+        - "3306:3306"
+
+  phpmyadmin:
+    container_name: phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    ports:
+        - '8080:80'
+    restart: always
+    environment:
+        PMA_HOST: mysql
+        PMA_USER: root
+        PMA_PASSWORD: MYSQL_ROOT_PASSWORD
+    depends_on:
+        - mysql
+
+volumes:
+  mysql-data:
+  node-modules:
+  build:

@@ -32,7 +32,6 @@ export default function ImageEditor(props) {
 
   const [activeCourseList, setActiveCourseList] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("");
-  const [lockStatus, setLockStatus] = useState(-1);
   const [alertOpen, setAlertOpen] = useState("");
 
   function getUserDetails(){
@@ -89,17 +88,11 @@ export default function ImageEditor(props) {
   useEffect(() => {
     getImage();
     clearInput();
-    getLockStatus();
   }, [selectedCourse])
 
   useEffect(() => {
-    lockImage();
-  }, [lockStatus]);
-
-  useEffect(() => {
     getLockStatus();
-  }, [currentImageId]);
-
+  }, [currentImageId])
 
   function getLockStatus(){
     let imageId = `&image_id=${currentImageId}`;
@@ -124,16 +117,21 @@ export default function ImageEditor(props) {
           loadJson = response.data;
         }
 
-        setLockStatus(loadJson.locked);
+        console.log(!loadJson.locked);
+
+        if(!loadJson.locked){
+          console.log("in");
+          lockImage(true);
+        }
     })
   }
 
-  function lockImage(){
+  function lockImage(lockStatus){
     let lock = lockStatus !== -1?`&lock=${lockStatus}`:"";
 
     if(currentImageId !== -1 && lock !== ""){
       let imageId = `&image_id=${currentImageId}`;
-
+      console.log("in lock image");
       axios({
           method:'get',
           url:`${props.basePath}/task.php?task=update_course_id${lock}${imageId}`
@@ -158,9 +156,7 @@ export default function ImageEditor(props) {
             setAlertOpen(loadJson.error);
             getImage();
             clearInput();
-            getLockStatus();
           }
-
         })
     }
   }
@@ -315,7 +311,7 @@ export default function ImageEditor(props) {
           resetView();
         }
         else {
-          setLockStatus(false);
+          lockImage(false);
           getImage();
           getActiveCourseImages();
           clearInput();
@@ -496,8 +492,6 @@ export default function ImageEditor(props) {
     <div id='home-container'>
       <div className='buttonGroup'>
         {!props.advancedType && <ButtonGroup courses = {activeCourseList} handleChange = {handleChange} selectedCourse={selectedCourse}/>}
-        {(lockStatus === false || lockStatus === -1)?<button type="button" class="btn btn-outline-primary" style={{marginBottom:'1rem'}} onClick = {() => {setLockStatus(true); setAlertOpen(`Current Image got locked`)}} ><i class="fa-solid fa-lock-open" style={{padding:'0rem',fontSize:'1.5rem'}}></i></button>:<button type="button" class="btn btn-outline-primary" style={{marginBottom:'1rem'}} onClick = {() => setLockStatus(false)}><i class="fa-solid fa-lock" style={{padding:'0rem', fontSize:'1.5rem'}}></i></button>}
-        {alertOpen != "" && <AlertModel altText={alertOpen} setAlertOpen={setAlertOpen} marginBottom = {'2rem'} severity={alertOpen === "Image has been locked by other user. loading next image"?"error":""}/>}        
       </div>
       <div className='space-children' id="div1">
         {imgUrl ?
@@ -519,7 +513,7 @@ export default function ImageEditor(props) {
           inline={isTextAreaInline}
           value={altText}
           onChange={getAltTextValue}
-          disabled={isDecorative || inputDisabled || !lockStatus}
+          disabled={isDecorative || inputDisabled}
         />
         <br />
 
@@ -530,7 +524,7 @@ export default function ImageEditor(props) {
           inline={true}
           checked={isDecorative} 
           onChange={toggleIsDecorative}
-          disabled={inputDisabled || !lockStatus}
+          disabled={inputDisabled}
         />
         <br />
 
@@ -538,7 +532,7 @@ export default function ImageEditor(props) {
           id="submit-btn" 
           color="success" 
           onClick={submitAltText} 
-          interaction={(!inputDisabled && (altText!='' || isDecorative)) && lockStatus ? "enabled" : "disabled"}
+          interaction={(!inputDisabled && (altText!='' || isDecorative)) ? "enabled" : "disabled"}
         >
           Submit
         </Button>
@@ -553,7 +547,7 @@ export default function ImageEditor(props) {
               setAdvancedType(null);
               setAdvancedModalOpen(true);
             }}
-            interaction={inputDisabled || !lockStatus? "disabled" : "enabled"}
+            interaction={inputDisabled ? "disabled" : "enabled"}
           >
             Mark As Advanced
           </Button>
@@ -562,7 +556,7 @@ export default function ImageEditor(props) {
           id="unusable-btn"
           color="secondary"
           onClick={() => setUnusableModalOpen(true)}
-          interaction={inputDisabled || !lockStatus? "disabled" : "enabled"}
+          interaction={inputDisabled ? "disabled" : "enabled"}
         >
           Mark as Unusable
         </Button>
@@ -573,7 +567,7 @@ export default function ImageEditor(props) {
           id="skip-btn" 
           color="secondary" 
           onClick={() => setSkipModalOpen(true)}
-          interaction={inputDisabled || !lockStatus? "disabled" : "enabled"}
+          interaction={inputDisabled ? "disabled" : "enabled"}
         >
           Skip Image
         </Button>
@@ -582,7 +576,7 @@ export default function ImageEditor(props) {
           id="view-context-btn"
           color="secondary"
           onClick={() => setViewContext(true)}
-          interaction={inputDisabled || !lockStatus? "disabled" : "enabled"}
+          interaction={inputDisabled ? "disabled" : "enabled"}
         >
           View Context
         </Button>

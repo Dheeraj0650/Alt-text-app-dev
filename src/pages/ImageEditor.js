@@ -31,7 +31,7 @@ export default function ImageEditor(props) {
   const [userimage, setUserImage] = useState("");
 
   const [activeCourseList, setActiveCourseList] = useState([]);
-  const [selectedCourse, setSelectedCourse] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState("All Courses");
   const [alertOpen, setAlertOpen] = useState("");
 
   function getUserDetails(){
@@ -117,10 +117,7 @@ export default function ImageEditor(props) {
           loadJson = response.data;
         }
 
-        console.log(!loadJson.locked);
-
         if(!loadJson.locked){
-          console.log("in");
           lockImage(true);
         }
     })
@@ -131,7 +128,6 @@ export default function ImageEditor(props) {
 
     if(currentImageId !== -1 && lock !== ""){
       let imageId = `&image_id=${currentImageId}`;
-      console.log("in lock image");
       axios({
           method:'get',
           url:`${props.basePath}/task.php?task=update_course_id${lock}${imageId}`
@@ -184,6 +180,21 @@ export default function ImageEditor(props) {
 
   // get the next image the queue for a given user 
   function getImage() {
+
+    var courseContinueFlag = false;
+    activeCourseList.forEach(element => {
+      if(element['id'] === selectedCourse){
+        courseContinueFlag = true;
+      }
+    });
+
+    console.log(selectedCourse);
+    console.log(activeCourseList);
+
+    if(!courseContinueFlag && selectedCourse !== "All Courses"){
+      setSelectedCourse("All Courses");
+    }
+
     setSubmitError("");
     setLoadError("");
     let advancedParameter = props.advancedType ? `&advanced_type=${props.advancedType}` : '';
@@ -312,8 +323,8 @@ export default function ImageEditor(props) {
         }
         else {
           lockImage(false);
-          getImage();
           getActiveCourseImages();
+          getImage();
           clearInput();
         }
       })

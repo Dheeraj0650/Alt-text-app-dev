@@ -10,7 +10,7 @@ export default function SelectLabels(props) {
   return (
     <div>
       <FormControl sx={{ m: 1, minWidth: 200}}>
-        <InputLabel id="demo-simple-select-helper-label">Courses</InputLabel>
+        <InputLabel id="demo-simple-select-helper-label">Course</InputLabel>
         <Select
           labelId="demo-simple-select-helper-label"
           id="demo-simple-select-helper"
@@ -18,8 +18,8 @@ export default function SelectLabels(props) {
           label="Course"
           onChange={props.handleChange}
         >
-          <MenuItem value="">
-            <em>None</em>
+          <MenuItem value = "All Courses">
+            <em>All Courses</em>
           </MenuItem>
           {props.courses.map(element => <MenuItem value={element.id}>{element.course_name}</MenuItem>)}
         </Select>

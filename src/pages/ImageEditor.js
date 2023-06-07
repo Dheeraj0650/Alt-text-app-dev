@@ -158,8 +158,9 @@ export default function ImageEditor(props) {
   }
 
   function getActiveCourseImages(){
+    let advancedParameter = props.advancedType ? `&advanced_type=${props.advancedType}` : '';
     axios.get(
-      `${props.basePath}/task.php?task=get_active_courses`
+      `${props.basePath}/task.php?task=get_active_courses${advancedParameter}`
     )
     .then((response) => {
       const activeCourseList = response.data;
@@ -174,27 +175,23 @@ export default function ImageEditor(props) {
         }
       });
 
+      var courseContinueFlag = false;
+      courseObjects.forEach(element => {
+        if(element['id'] === selectedCourse){
+          courseContinueFlag = true;
+        }
+      });
+  
+      if(!courseContinueFlag && selectedCourse !== "All Courses"){
+        setSelectedCourse("All Courses");
+      }
+
       setActiveCourseList(courseObjects);
     })
   }
 
   // get the next image the queue for a given user 
   function getImage() {
-
-    var courseContinueFlag = false;
-    activeCourseList.forEach(element => {
-      if(element['id'] === selectedCourse){
-        courseContinueFlag = true;
-      }
-    });
-
-    console.log(selectedCourse);
-    console.log(activeCourseList);
-
-    if(!courseContinueFlag && selectedCourse !== "All Courses"){
-      setSelectedCourse("All Courses");
-    }
-
     setSubmitError("");
     setLoadError("");
     let advancedParameter = props.advancedType ? `&advanced_type=${props.advancedType}` : '';
@@ -502,7 +499,7 @@ export default function ImageEditor(props) {
     <> 
     <div id='home-container'>
       <div className='buttonGroup'>
-        {!props.advancedType && <ButtonGroup courses = {activeCourseList} handleChange = {handleChange} selectedCourse={selectedCourse}/>}
+        {<ButtonGroup courses = {activeCourseList} handleChange = {handleChange} selectedCourse={selectedCourse}/>}
       </div>
       <div className='space-children' id="div1">
         {imgUrl ?

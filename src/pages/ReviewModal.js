@@ -11,6 +11,7 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
 
     const [tempImages, setTempImages] = useState([]);
     const [alertOpen, setAlertOpen] = useState("");
+    const [alertId, setAlertId] = useState("");
 
     const [nameArray, setNameArray] = useState([]);
     const [viewContext, setViewContext] = useState(false);
@@ -175,7 +176,8 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
                                 onChange={(event) => handleAltTextChange(event, image.image_url)}
                             >
                             </TextArea>
-                            <Avatar name = {(imageUrlArray.find(obj => obj.image_url === image.image_url))? (imageUrlArray.find(obj => obj.image_url === image.image_url)).alttext_updated_user:""} imageUrl = {(imageUrlArray.find(obj => obj.image_url === image.image_url))? (imageUrlArray.find(obj => obj.image_url === image.image_url)).user_url:""}/>
+                            {alertId === image.image_id && alertOpen !== "" && <AlertModel altText={alertOpen} alertId = {image.image_id} alertId2={alertId} setAlertOpen={setAlertOpen} setAlertId={setAlertId} marginBottom = {"2rem"}/>}
+                            {alertId !== image.image_id && <Avatar name = {(imageUrlArray.find(obj => obj.image_url === image.image_url))? (imageUrlArray.find(obj => obj.image_url === image.image_url)).alttext_updated_user:""} imageUrl = {(imageUrlArray.find(obj => obj.image_url === image.image_url))? (imageUrlArray.find(obj => obj.image_url === image.image_url)).user_url:""}/>}
                             <button type="button" class="btn btn-outline-primary" onClick={() => {setImageId(image.image_id);setViewContext(true);}}>View Context</button>
                             <Button
                                 color='success'
@@ -183,9 +185,11 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
                                 onClick={
                                     (event) => {
                                             if (image.alt_text.indexOf("'") !== -1 || image.alt_text.indexOf("\"") !== -1) {
+                                                setAlertId(image.image_id);
                                                 setAlertOpen("Alt text shouldn't contain quotes or apostrophes");
                                             } else {
-                                                getUserDetails(image.image_url);
+                                                // getUserDetails(image.image_url);
+                                                setAlertId(image.image_id);
                                                 handleUpdateAltText(event, image.image_url, image.alt_text);
                                                 setAlertOpen("Successfully updated Alt text with " + image.alt_text);
                                             }
@@ -217,7 +221,6 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
         <div className='container-fluid'>
             <div className='container-fluid'>
                 {!viewContext && <h2 style={{marginBottom:'2rem', marginTop:'1rem'}}>Reviewing: {courseUnderReview.courseName} <span style={{ float:'right'}}><button type="button" class="btn btn-outline-primary" onClick = {onDismiss}><i class="fa-solid fa-xmark" style={{padding:"0rem", fontSize:'1.5rem'}}></i></button></span></h2>}
-                {alertOpen != "" && <AlertModel altText={alertOpen} setAlertOpen={setAlertOpen} marginBottom = {"2rem"}/>}
             </div>
             <div className='container-fluid'>
                 {!viewContext &&

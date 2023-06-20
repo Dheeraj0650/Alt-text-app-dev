@@ -212,6 +212,8 @@ export default function ImageEditor(props) {
                 if (getImageJson.image_id) {
                   setImgUrl(getImageJson.url);
                   setCurrentImageId(getImageJson.image_id);
+                  setViewContext(false);
+                  setViewContext(true);
                 }
                 else if (getImageJson.no_images) {
                   setLoadError("No images left in queue");
@@ -234,6 +236,8 @@ export default function ImageEditor(props) {
             if (getImageJson.image_id) {
               setImgUrl(getImageJson.url);
               setCurrentImageId(getImageJson.image_id);
+              setViewContext(false);
+              setViewContext(true);
             }
             else if (getImageJson.no_images) {
               setLoadError("No images left in queue");
@@ -580,14 +584,14 @@ export default function ImageEditor(props) {
           Skip Image
         </Button>
 
-        <Button
+        {/* <Button
           id="view-context-btn"
           color="secondary"
           onClick={() => setViewContext(true)}
           interaction={inputDisabled ? "disabled" : "enabled"}
         >
           View Context
-        </Button>
+        </Button> */}
         
         {submitError !== "" && 
           <Alert variant='error' renderCloseButtonLabel='close'>
@@ -596,7 +600,7 @@ export default function ImageEditor(props) {
         }
 
       </div>
-      {viewContext && <i class="fa-solid fa-circle-xmark fa-2x" onClick={() => setViewContext(false)}></i>}
+      {/* {viewContext && <i class="fa-solid fa-circle-xmark fa-2x" onClick={() => setViewContext(false)}></i>} */}
       { viewContext && 
           <ContextPage imageId={currentImageId} modalOpen={viewContext} onViewContextChange={viewContextChange} basePath={props.basePath} />
       }
@@ -615,7 +619,7 @@ export default function ImageEditor(props) {
         <CloseButton placement="end" offset="medium" screenReaderLabel="Close" onClick={() => setSkipModalOpen(false)}/>
         <Heading level="h2">Skip Image</Heading>
       </Modal.Header>
-      <Modal.Body>
+      <Modal.Body> 
         <Text>Are you sure that you want to skip this image?</Text>
       </Modal.Body>
       <Modal.Footer>

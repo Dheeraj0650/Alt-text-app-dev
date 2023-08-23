@@ -114,6 +114,7 @@ export default function ContextPage(props) {
             error ? 
             <p>{error}</p> :
             <div id="div2">
+                <h2>View Image in Context</h2>
                 <div id="page-content" ref={bodyDiv} 
                     dangerouslySetInnerHTML={{__html: pageBody}} ></div>
                 <Transition

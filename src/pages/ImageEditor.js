@@ -185,6 +185,21 @@ export default function ImageEditor(props) {
       if(!courseContinueFlag && selectedCourse !== "All Courses"){
         setSelectedCourse("All Courses");
       }
+      
+      courseObjects.sort((a, b) => {
+          let fa = a.course_name,
+              fb = b.course_name;
+
+          if (fa < fb) {
+              return -1;
+          }
+
+          if (fa > fb) {
+              return 1;
+          }
+
+          return 0;
+      });
 
       setActiveCourseList(courseObjects);
     })
@@ -501,11 +516,12 @@ export default function ImageEditor(props) {
 
   return (
     <> 
-    <div id='home-container'>
-      <div className='buttonGroup'>
-        {<ButtonGroup courses = {activeCourseList} handleChange = {handleChange} selectedCourse={selectedCourse}/>}
-      </div>
+    <div className="container-fluid" id='home-container'>
       <div className='space-children' id="div1">
+        <h2>Alt Text</h2>
+        <div className='buttonGroup'>
+          {<ButtonGroup courses = {activeCourseList} handleChange = {handleChange} selectedCourse={selectedCourse}/>}
+        </div>
         {imgUrl ?
           <div id="image-container" style={{ height: imageHeight }}>
             <img id="main-image" src={imgUrl} alt="image pulled" ref={imageRef} onLoad={handleImageLoad} />
@@ -600,7 +616,6 @@ export default function ImageEditor(props) {
         }
 
       </div>
-      {/* {viewContext && <i class="fa-solid fa-circle-xmark fa-2x" onClick={() => setViewContext(false)}></i>} */}
       { viewContext && 
           <ContextPage imageId={currentImageId} modalOpen={viewContext} onViewContextChange={viewContextChange} basePath={props.basePath} />
       }

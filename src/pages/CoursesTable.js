@@ -3,7 +3,7 @@ import { Table, Button, Text, ScreenReaderContent } from "@instructure/ui";
 
 import axios from 'axios';
 
-export default function CoursesTable({basePath, courses, loadTable, setCourses, handleReview, setIsLoading, setPushMessage}) {
+export default function CoursesTable({basePath, courses, loadTable, setCourses, handleReview, setIsLoading, setPushMessage, handlePublish, courseFilter}) {
   
   const [sortBy, setSortBy] = useState();
   const [ascending, setAscending] = useState(true);
@@ -12,7 +12,6 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
   const [completedImages, setCompletedImages] = useState(0);
   const [publishedImages, setPublishedImages] = useState(0);
   const [imagesToPublish, setImagesToPublish] = useState(0);
-
 
   const direction = ascending ? 'ascending' : 'descending';
 
@@ -82,54 +81,54 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
     return false;
   }
 
-  function handlePublish(courseId) {
-    setIsLoading(true);
+  // function handlePublish(courseId) {
+  //   setIsLoading(true);
 
-    axios({
-      method:'post',
-      url:`${basePath}/task.php?task=push_image`,
-      data: {
-        course_id: courseId
-      }
-    })
-    .then((response) => {
+  //   axios({
+  //     method:'post',
+  //     url:`${basePath}/task.php?task=push_image`,
+  //     data: {
+  //       course_id: courseId
+  //     }
+  //   })
+  //   .then((response) => {
 
-      var loadJson = {};
+  //     var loadJson = {};
 
-      if(typeof response.data === "string"){
-        const jsonRegex = /{[^}]+}/;
-        const jsonMatch = response.data.match(jsonRegex);
+  //     if(typeof response.data === "string"){
+  //       const jsonRegex = /{[^}]+}/;
+  //       const jsonMatch = response.data.match(jsonRegex);
   
-        if (jsonMatch) {
-          const jsonString = jsonMatch[0];
-          loadJson = JSON.parse(jsonString);
-        }
-      }
-      else {
-        loadJson = response.data;
-      }
+  //       if (jsonMatch) {
+  //         const jsonString = jsonMatch[0];
+  //         loadJson = JSON.parse(jsonString);
+  //       }
+  //     }
+  //     else {
+  //       loadJson = response.data;
+  //     }
 
-      if ("failed_image_ids" in loadJson) {
-        setPushMessage(`The alt text for ${loadJson.pushed_images} image${loadJson.pushed_images == 1 ? ' was' : 's were'} successfully updated within Canvas. The alt text for the following image ids failed to push to canvas: ${loadJson.failed_image_ids}`);
-      }
-      else if (loadJson.pushed_images == 0) {
-        setPushMessage('Everything is already up to date.');
-      }
-      else {
-        setPushMessage(`Success! The alt text for ${loadJson.pushed_images} image${loadJson.pushed_images == 1 ? ' was' : 's were'} successfully updated within Canvas.`)
-      }
+  //     if ("failed_image_ids" in loadJson) {
+  //       setPushMessage(`The alt text for ${loadJson.pushed_images} image${loadJson.pushed_images == 1 ? ' was' : 's were'} successfully updated within Canvas. The alt text for the following image ids failed to push to canvas: ${loadJson.failed_image_ids}`);
+  //     }
+  //     else if (loadJson.pushed_images == 0) {
+  //       setPushMessage('Everything is already up to date.');
+  //     }
+  //     else {
+  //       setPushMessage(`Success! The alt text for ${loadJson.pushed_images} image${loadJson.pushed_images == 1 ? ' was' : 's were'} successfully updated within Canvas.`)
+  //     }
 
-      loadTable(courseId, loadJson.pushed_images);
+  //     loadTable(courseId, loadJson.pushed_images);
 
-    })
-    .catch((error) => {
-      setPushMessage('An error occurred while pushing the alt text to canvas');
-    })
-    .finally(() => {
-      setIsLoading(false);
-    });
+  //   })
+  //   .catch((error) => {
+  //     setPushMessage('An error occurred while pushing the alt text to canvas');
+  //   })
+  //   .finally(() => {
+  //     setIsLoading(false);
+  //   });
 
-  }
+  // }
 
   
 
@@ -187,17 +186,19 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
       <Table.Body>
         {(courses || []).map(course => {
           if(course.total_images !== course.published_images){
-            return (
-              <Table.Row key={course.id}>
-                <Table.RowHeader id={course.id}>{course.name}</Table.RowHeader>
-                <Table.Cell>{course.total_images}</Table.Cell>
-                <Table.Cell>{course.completed_images}</Table.Cell>
-                <Table.Cell>{course.published_images}</Table.Cell>
-                <Table.Cell>{course.completed_images - course.published_images}</Table.Cell>
-                <Table.Cell><Button color='secondary' onClick={() => handleReview(course.id, course.name)}>Review</Button></Table.Cell>
-                <Table.Cell><Button color='secondary' onClick={() => handlePublish(course.id)}>Publish</Button></Table.Cell>
-              </Table.Row>
-            )
+            if((courseFilter === "") || (courseFilter !== "" && course.name && course.name.toLowerCase().replaceAll(" ", "").includes(courseFilter.toLowerCase().replaceAll(" ", "")))){
+              return (
+                <Table.Row key={course.id}>
+                  <Table.RowHeader id={course.id}>{course.name}</Table.RowHeader>
+                  <Table.Cell>{course.total_images}</Table.Cell>
+                  <Table.Cell>{course.completed_images}</Table.Cell>
+                  <Table.Cell>{course.published_images}</Table.Cell>
+                  <Table.Cell>{course.completed_images - course.published_images}</Table.Cell>
+                  <Table.Cell><Button color='secondary' onClick={() => handleReview(course.id, course.name)}>Review</Button></Table.Cell>
+                  <Table.Cell><Button color='secondary' onClick={() => handlePublish(course.id)}>Publish</Button></Table.Cell>
+                </Table.Row>
+              )
+            }
           }
         })}
       </Table.Body>

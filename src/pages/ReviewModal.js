@@ -6,7 +6,7 @@ import Avatar from './Avatar';
 import ContextPage from './ContextPage';
 import axios from 'axios';
 
-export default function ReviewModal({ basePath, open, onDismiss, courseUnderReview, completedImages, setCompletedImages }) {
+export default function ReviewModal({ basePath, open, onDismiss, courseUnderReview, completedImages, setCompletedImages, handlePublish }) {
     const [tempImages, setTempImages] = useState([]);
     const [alertOpen, setAlertOpen] = useState("");
     const [alertId, setAlertId] = useState("");
@@ -18,6 +18,11 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
 
     function viewContextChange(view) {
         setViewContext(view);
+    }
+
+    function handleInternalPublish(){
+        handlePublish(courseUnderReview.courseId);
+        onDismiss();
     }
 
     function getUserDetails(image_url){
@@ -140,8 +145,8 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
             url:`${basePath}/task.php?task=update_image_alt_text`,
             data: {
                 image_url: imageUrl,
-                new_alt_text: isDecorative ? "":cleanAltText,
-                is_decorative: isDecorative
+                is_decorative: isDecorative ? "1" : "0",
+                new_alt_text: isDecorative ? "":cleanAltText
             }
         })
         .then((response) => {
@@ -169,53 +174,57 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
                 return (
                     <Grid.Col width={4} key={image.image_url}>
                         <Flex direction='column'>
-                            <Img src={image.image_url} alt="Image got removed from the course"/>
-                            <TextArea
-                                label={<ScreenReaderContent>Alt Text</ScreenReaderContent>}
-                                value={image.alt_text}
-                                onChange={(event) => handleAltTextChange(event, image.image_url)}
-                                placeholder="The image is marked as decorative"
-                            >
-                            </TextArea>
-                            {alertId === image.image_id && alertOpen !== "" && <AlertModel altText={alertOpen} alertId = {image.image_id} alertId2={alertId} setAlertOpen={setAlertOpen} setAlertId={setAlertId} marginBottom = {"2rem"}/>}
-                            {alertId !== image.image_id && <Avatar name = {(imageUrlArray.find(obj => obj.image_url === image.image_url))? (imageUrlArray.find(obj => obj.image_url === image.image_url)).alttext_updated_user:""} imageUrl = {(imageUrlArray.find(obj => obj.image_url === image.image_url))? (imageUrlArray.find(obj => obj.image_url === image.image_url)).user_url:""}/>}
-                            <div className='container-fluid' style={{"marginBottom":"1rem"}}>
-                                {console.log(image.is_decorative)}
-                                <Checkbox 
-                                    id={"isDecorative-checkbox-" + image.image_id}
-                                    label="Mark Image as Decorative" 
-                                    variant="simple" 
-                                    inline={true}
-                                    checked={image.is_decorative}
-                                    onChange={()=>{
-                                        console.log(image.is_decorative);
-                                        image.is_decorative = !image.is_decorative;
-                                        console.log(image.is_decorative);
-                                        setChangeUI(!changeUI);
-                                    }}
-                                    // disabled={inputDisabled}
-                                />
-                            </div>
-                            <button type="button" class="btn btn-outline-primary" onClick={() => {setImageId(image.image_id);setViewContext(true);}}>View Context</button>
-                            <Button
-                                color='success'
-                                margin='xxx-small'
-                                onClick={
-                                    (event) => {
-                                            if (image.alt_text.indexOf("'") !== -1 || image.alt_text.indexOf("\"") !== -1) {
-                                                setAlertId(image.image_id);
-                                                setAlertOpen("Alt text shouldn't contain quotes or apostrophes");
-                                            } else {
-                                                // getUserDetails(image.image_url);
-                                                setAlertId(image.image_id);
-                                                handleUpdateAltText(event, image.image_url, image.alt_text, image.is_decorative);
-                                                setAlertOpen("Successfully updated Alt text with " + image.alt_text);
-                                            }
+                            <div class="card border-warning">
+                                <div class="card-body">
+                                    <Img src={image.image_url} alt="Image got removed from the course"/>
+                                    <TextArea
+                                        label={<ScreenReaderContent>Alt Text</ScreenReaderContent>}
+                                        value={image.alt_text}
+                                        onChange={(event) => handleAltTextChange(event, image.image_url)}
+                                        placeholder="The image is marked as decorative"
+                                    >
+                                    </TextArea>
+                                    {alertId === image.image_id && alertOpen !== "" && <AlertModel altText={alertOpen} alertId = {image.image_id} alertId2={alertId} setAlertOpen={setAlertOpen} setAlertId={setAlertId} marginBottom = {"2rem"}/>}
+                                    {alertId !== image.image_id && <Avatar name = {(imageUrlArray.find(obj => obj.image_url === image.image_url))? (imageUrlArray.find(obj => obj.image_url === image.image_url)).alttext_updated_user:""} imageUrl = {(imageUrlArray.find(obj => obj.image_url === image.image_url))? (imageUrlArray.find(obj => obj.image_url === image.image_url)).user_url:""}/>}
+                                    <div className='container-fluid' style={{"marginBottom":"1rem"}}>
+                                        {console.log(image.is_decorative)}
+                                        <Checkbox 
+                                            id={"isDecorative-checkbox-" + image.image_id}
+                                            label="Mark Image as Decorative" 
+                                            variant="simple" 
+                                            inline={true}
+                                            checked={image.is_decorative}
+                                            onChange={()=>{
+                                                console.log(image.is_decorative);
+                                                image.is_decorative = !image.is_decorative;
+                                                console.log(image.is_decorative);
+                                                setChangeUI(!changeUI);
+                                            }}
+                                            // disabled={inputDisabled}
+                                        />
+                                    </div>
+                                    <button type="button" class="btn btn-outline-primary" onClick={() => {setImageId(image.image_id);setViewContext(true);}}>View Context</button>
+                                    <Button
+                                        color='success'
+                                        margin='xxx-small'
+                                        onClick={
+                                            (event) => {
+                                                    if (image.alt_text.indexOf("'") !== -1 || image.alt_text.indexOf("\"") !== -1) {
+                                                        setAlertId(image.image_id);
+                                                        setAlertOpen("Alt text shouldn't contain quotes or apostrophes");
+                                                    } else {
+                                                        // getUserDetails(image.image_url);
+                                                        setAlertId(image.image_id);
+                                                        handleUpdateAltText(event, image.image_url, image.alt_text, image.is_decorative);
+                                                        setAlertOpen("Successfully updated Alt text with " + image.alt_text);
+                                                    }
+                                                }
                                         }
-                                }
-                            >
-                                Update Alt Text
-                            </Button>
+                                    >
+                                        Update Alt Text
+                                    </Button>
+                                </div>
+                            </div>
                         </Flex>
                     </Grid.Col>
                 );
@@ -238,7 +247,7 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
     return (
         <div className='container-fluid'>
             <div className='container-fluid'>
-                {!viewContext && <h2 style={{marginBottom:'2rem', marginTop:'1rem'}}>Reviewing: {courseUnderReview.courseName} <span style={{ float:'right'}}><button type="button" class="btn btn-outline-primary" onClick = {onDismiss}><i class="fa-solid fa-xmark" style={{padding:"0rem", fontSize:'1.5rem'}}></i></button></span></h2>}
+                {!viewContext && <h2 style={{marginBottom:'2rem', marginTop:'1rem'}}>Reviewing: {courseUnderReview.courseName} <span style={{ float:'right'}}><Button color='success' onClick={() => {handleInternalPublish()}} >Publish</Button><button type="button" class="btn btn-outline-primary" style={{marginLeft:'0.5rem'}} onClick = {onDismiss}><i class="fa-solid fa-xmark" style={{padding:"0rem", fontSize:'1.5rem'}}></i></button></span></h2>}
             </div>
             <div className='container-fluid'>
                 {!viewContext &&

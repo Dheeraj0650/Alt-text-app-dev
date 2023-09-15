@@ -68,8 +68,22 @@ function handleGet($task) {
             break;
         
         case 'get_active_courses':
+            $user = Action::getUserByLmsId($_SESSION['userID']);
+            if ($user['success']) {
+                $userId = $user['user_id'];
+            }
+            else {
+                $data = array(
+                    'error' => true,
+                    'no_images' => false,
+                    'message' => 'lms id does not exist'
+                );
+                Action::jsonResponse($data);
+            }
+
             $courses = [];
-            $courseList = Action::getActiveCourses();
+            $advancedType = isset($_GET['advanced_type'])?$_GET['advanced_type']:"";
+            $courseList = Action::getActiveCourses($userId, $advancedType);
 
             foreach($courseList as $element){
                 $courseId = $element["course_id"];
@@ -111,6 +125,17 @@ function handleGet($task) {
                 }
                 else{
                     Action::updateEditorId($userId, $_GET['image_id'], $_GET['lock']);
+                    function perform_task($value) {
+                        $start_time = time();
+                      
+                        while(true) {
+                          if ((time() - $start_time) > 300) {
+                            return false; // timeout, function took longer than 300 seconds
+                          }
+                          // Other processing
+                        }
+                    }
+                    
                 }
             }
             break;
@@ -156,7 +181,7 @@ function handleGet($task) {
 
             if (isset($_GET['advanced_type'])) {
                 validateAdvancedType($_GET['advanced_type']);
-                $image = Action::getAdvancedImage($_GET['advanced_type'], $selectedCourseId);
+                $image = Action::getAdvancedImage($_GET['advanced_type'], $selectedCourseId, $userId);
             }
             else {
                 $image = Action::getImage($selectedCourseId, $userId);
@@ -229,7 +254,8 @@ function handleGet($task) {
                 array_push($data, array(
                     'image_url' => $image['image_url'],
                     'alt_text' => $image['alt_text'],
-                    'image_id' => $image['id']
+                    'image_id' => $image['id'],
+                    'is_decorative' => $image['is_decorative'] == 1 ? true: false
                 ));
             }
 
@@ -623,9 +649,11 @@ function handlePost($task) {
         case 'update_image_alt_text':
             // retrieve and validate the request body
             $requestBody = json_decode(file_get_contents('php://input'), true);
+
             if (empty($requestBody) ||
                 !array_key_exists('image_url', $requestBody) ||
-                !array_key_exists('new_alt_text', $requestBody)
+                !array_key_exists('new_alt_text', $requestBody)||
+                !array_key_exists('is_decorative', $requestBody)
             ) {
                 $data = array(
                     'error' => true,
@@ -634,7 +662,7 @@ function handlePost($task) {
                 Action::jsonResponse($data);    
             }
 
-            $data = Action::updateAltText($requestBody['image_url'], $requestBody['new_alt_text']);
+            $data = Action::updateAltText($requestBody['image_url'], $requestBody['new_alt_text'], $requestBody['is_decorative']);
             
             Action::jsonResponse($data);
             break;

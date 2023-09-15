@@ -20,6 +20,12 @@ export default function ReviewPublishPage(props) {
   const [completedImages, setCompletedImages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [pushMessage, setPushMessage] = useState('');
+  const [courseFilter, setCourseFilter] = useState("");
+
+  function handleFilterChange(e){
+    console.log(e.target.value);
+    setCourseFilter(e.target.value.trim());
+  }
 
   function updateMondayBoard(courseId, pushed_images){
     for(var idx = 0; idx < courses.length;idx++){
@@ -153,11 +159,73 @@ export default function ReviewPublishPage(props) {
     .finally(() => setIsLoading(false));
   }
 
+  function handlePublish(courseId) {
+    setIsLoading(true);
+
+    axios({
+      method:'post',
+      url:`${props.basePath}/task.php?task=push_image`,
+      data: {
+        course_id: courseId
+      }
+    })
+    .then((response) => {
+
+      var loadJson = {};
+
+      if(typeof response.data === "string"){
+        const jsonRegex = /{[^}]+}/;
+        const jsonMatch = response.data.match(jsonRegex);
+  
+        if (jsonMatch) {
+          const jsonString = jsonMatch[0];
+          loadJson = JSON.parse(jsonString);
+        }
+      }
+      else {
+        loadJson = response.data;
+      }
+
+      if ("failed_image_ids" in loadJson) {
+        setPushMessage(`The alt text for ${loadJson.pushed_images} image${loadJson.pushed_images == 1 ? ' was' : 's were'} successfully updated within Canvas. The alt text for the following image ids failed to push to canvas: ${loadJson.failed_image_ids}`);
+      }
+      else if (loadJson.pushed_images == 0) {
+        setPushMessage('Everything is already up to date.');
+      }
+      else {
+        setPushMessage(`Success! The alt text for ${loadJson.pushed_images} image${loadJson.pushed_images == 1 ? ' was' : 's were'} successfully updated within Canvas.`)
+      }
+
+      loadTable(courseId, loadJson.pushed_images);
+
+    })
+    .catch((error) => {
+      setPushMessage('An error occurred while pushing the alt text to canvas');
+    })
+    .finally(() => {
+      setIsLoading(false);
+    });
+
+  }
+
 
   return (
     <>
       {!reviewOpen && <div className='space-children'>
-        <Button color='success' onClick={() => handlePublishAll()} >Publish All Courses</Button>
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col">
+              <div class="input-group mb-3" style={{float:"left"}}>
+                <span class="input-group-text" id="inputGroup-sizing-default">Filter</span>
+                <input type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-default" placeholder='Search for Course Name' onChange={handleFilterChange}></input>
+              </div>
+            </div>
+            <div class="col">
+              <button class='btn btn-success' style={{float:"right"}} onClick={() => handlePublishAll()} >Publish All Courses</button>
+            </div>
+          </div>
+        </div>
+
         <CoursesTable 
           basePath={props.basePath} 
           courses={courses} 
@@ -166,6 +234,8 @@ export default function ReviewPublishPage(props) {
           setCourses={setCourses}
           setIsLoading={setIsLoading}
           setPushMessage={setPushMessage}
+          handlePublish={handlePublish}
+          courseFilter={courseFilter}
         />
         <br />
         {pushMessage != '' ? <Alert
@@ -197,10 +267,11 @@ export default function ReviewPublishPage(props) {
     {reviewOpen && <ReviewModal 
       basePath={props.basePath}
       open={reviewOpen}
-      onDismiss={() => setReviewOpen(false)}
+      onDismiss={function(){setReviewOpen(false);setCourseFilter("")}}
       courseUnderReview={courseUnderReview}
       completedImages={completedImages}
       setCompletedImages={setCompletedImages}
+      handlePublish={handlePublish}
     />}
   </>
   )

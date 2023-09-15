@@ -133,12 +133,23 @@ class Action
         }
     }
 
-    public static function getActiveCourses(){
-        $activeCourses = DB::query(
-            "SELECT id, course_id FROM at_image 
-            WHERE completed_at = '0000-00-00 00:00:00' AND advanced_type IS NULL AND is_unusable=0
-            ORDER BY created_at ASC"
-        );
+    public static function getActiveCourses($userId, $advancedType){
+        if($advancedType != ""){
+            $activeCourses = DB::query(
+                "SELECT id, course_id FROM at_image 
+                WHERE completed_at = '0000-00-00 00:00:00' AND is_unusable=0 AND (editor = 0 OR editor = %i) AND advanced_type = %s
+                ORDER BY created_at ASC", 
+                $userId, $advancedType
+            );
+        }
+        else {
+            $activeCourses = DB::query(
+                "SELECT id, course_id FROM at_image 
+                WHERE completed_at = '0000-00-00 00:00:00' AND advanced_type IS NULL AND is_unusable=0 AND (editor = 0 OR editor = %i)
+                ORDER BY created_at ASC", 
+                $userId
+            );
+        }
 
         return $activeCourses;
     }
@@ -228,30 +239,41 @@ class Action
         return $image;
     }
 
-    public static function getAdvancedImage($advancedType, $selectedCourseId) {
+    public static function getAdvancedImage($advancedType, $selectedCourseId, $userId) {
         if (empty($_SESSION['skippedImages'])) {
             $image = DB::queryFirstRow(
                 "SELECT id, image_url, course_id FROM at_image 
-                WHERE completed_at = '0000-00-00 00:00:00' AND advanced_type=%s AND is_unusable=0
+                WHERE completed_at = '0000-00-00 00:00:00' AND advanced_type=%s AND is_unusable=0 AND course_id = %i AND editor = %i
                 ORDER BY created_at ASC
                 LIMIT 1"
-                ,$advancedType
+                , $advancedType, $selectedCourseId, $userId
             );
+
             if (is_null($image)) {
                 $image = DB::queryFirstRow(
                     "SELECT id, image_url, course_id FROM at_image 
-                    WHERE completed_at = '0000-00-00 00:00:00' AND advanced_type=%s AND is_unusable=0
+                    WHERE completed_at = '0000-00-00 00:00:00' AND advanced_type=%s AND is_unusable=0 AND course_id = %i AND editor = 0
                     ORDER BY is_priority DESC, created_at ASC
                     LIMIT 1",
-                    $advancedType
+                    $advancedType, $selectedCourseId
                 );
-        
-                if (!is_null($image)) {
-                    DB::query(
-                        "UPDATE at_image
-                        SET editor=%i 
-                        WHERE id=%i",
-                        $userId, $image['id']
+            }
+            if (is_null($image)) {
+                $image = DB::queryFirstRow(
+                    "SELECT id, image_url, course_id FROM at_image 
+                    WHERE completed_at = '0000-00-00 00:00:00' AND advanced_type=%s AND is_unusable=0 AND editor = %i
+                    ORDER BY is_priority DESC, created_at ASC
+                    LIMIT 1",
+                    $advancedType, $userId
+                );
+
+                if(is_null($image)){
+                    $image = DB::queryFirstRow(
+                        "SELECT id, image_url, course_id FROM at_image 
+                        WHERE completed_at = '0000-00-00 00:00:00' AND advanced_type=%s AND is_unusable=0 AND editor = 0
+                        ORDER BY is_priority DESC, created_at ASC
+                        LIMIT 1",
+                        $advancedType
                     );
                 }
             }
@@ -259,32 +281,43 @@ class Action
         else {
             $image = DB::queryFirstRow(
                 "SELECT id, image_url, course_id FROM at_image 
-                WHERE completed_at = '0000-00-00 00:00:00' AND id NOT IN %li AND advanced_type=%s AND is_unusable=0
+                WHERE completed_at = '0000-00-00 00:00:00' AND id NOT IN %li AND advanced_type=%s AND is_unusable=0 AND course_id = %i AND editor = %i
                 ORDER BY created_at ASC
                 LIMIT 1", 
-                $_SESSION['skippedImages'], $advancedType
+                $_SESSION['skippedImages'], $advancedType, $selectedCourseId, $userId
             );
         
             if (is_null($image)) {
                 $image = DB::queryFirstRow(
                     "SELECT id, image_url, course_id FROM at_image 
-                    WHERE completed_at = '0000-00-00 00:00:00' AND id NOT IN %li AND advanced_type=%s AND is_unusable=0
+                    WHERE completed_at = '0000-00-00 00:00:00' AND id NOT IN %li AND advanced_type=%s AND is_unusable=0 AND course_id = %i AND editor = 0
                     ORDER BY is_priority DESC, created_at ASC
                     LIMIT 1", 
-                    $_SESSION['skippedImages'], $advancedType
+                    $_SESSION['skippedImages'], $advancedType, $selectedCourseId
                 );
-        
-                if (!is_null($image)) {
-                    DB::query(
-                        "UPDATE at_image
-                        SET editor=%i 
-                        WHERE id=%i",
-                        $userId, $image['id']
+            }
+
+            if (is_null($image)) {
+                $image = DB::queryFirstRow(
+                    "SELECT id, image_url, course_id FROM at_image 
+                    WHERE completed_at = '0000-00-00 00:00:00' AND id NOT IN %li AND advanced_type=%s AND is_unusable=0 AND editor = %i
+                    ORDER BY is_priority DESC, created_at ASC
+                    LIMIT 1", 
+                    $_SESSION['skippedImages'], $advancedType, $userId
+                );
+
+                if (is_null($image)) {
+                    $image = DB::queryFirstRow(
+                        "SELECT id, image_url, course_id FROM at_image 
+                        WHERE completed_at = '0000-00-00 00:00:00' AND id NOT IN %li AND advanced_type=%s AND is_unusable=0 AND editor = 0
+                        ORDER BY is_priority DESC, created_at ASC
+                        LIMIT 1", 
+                        $_SESSION['skippedImages'], $advancedType
                     );
                 }
             }
         }
-    
+
         return $image;
     }
 
@@ -705,8 +738,12 @@ class Action
                     }
 
                     $response = curlGet($canvas_page_url);
-        
+
                     if (key_exists('errors', $response)) {
+                        $message = $response["errors"][0]["message"];
+                        if($message == "The specified resource does not exist."){
+                            continue;
+                        }
                         return -1;
                     }
 
@@ -748,13 +785,16 @@ class Action
                     }
 
                     $response = curlGet($assignment_page_url);
-        
+
                     if (key_exists('errors', $response)) {
+                        $message = $response["errors"][0]["message"];
+                        if($message == "The specified resource does not exist."){
+                            continue;
+                        }
                         return -1;
                     }
 
                     $body = $response['description'];
-
                     $oldBody = $body;
                     $body = Action::replaceImages($body, $image, $courseId);
                     if ($body != $oldBody) {
@@ -791,8 +831,12 @@ class Action
                     }
 
                     $response = curlGet($topic_page_url);
-        
+
                     if (key_exists('errors', $response)) {
+                        $message = $response["errors"][0]["message"];
+                        if($message == "The specified resource does not exist."){
+                            continue;
+                        }
                         return -1;
                     }
 
@@ -861,12 +905,12 @@ class Action
         return $name;
     }
 
-    public static function updateAltText($imageUrl, $newAltText) {
+    public static function updateAltText($imageUrl, $newAltText, $isDecorative) {
         DB::query(
             "UPDATE at_image
-            SET alt_text=%s
+            SET alt_text=%s,is_decorative=%s
             WHERE image_url=%s",
-            $newAltText, $imageUrl
+            $newAltText, $isDecorative, $imageUrl
         );
         return array('imageUrl' => $imageUrl, 'newAltText' => $newAltText);
     }

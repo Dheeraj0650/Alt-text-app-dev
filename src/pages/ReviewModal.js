@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import {Checkbox, Grid, Img, Alert, Flex, TextArea, ScreenReaderContent, Button } from '@instructure/ui';
+import ReactDOM from 'react-dom';
+import {Checkbox, Grid, Img, Alert, Flex, TextArea, ScreenReaderContent, Button, Overlay } from '@instructure/ui';
 import DOMPurify from 'dompurify';
 import AlertModel from './Alert';
 import Avatar from './Avatar';
 import ContextPage from './ContextPage';
 import axios from 'axios';
 
+  
 export default function ReviewModal({ basePath, open, onDismiss, courseUnderReview, completedImages, setCompletedImages, handlePublish }) {
     const [tempImages, setTempImages] = useState([]);
     const [alertOpen, setAlertOpen] = useState("");
@@ -15,6 +17,69 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
     const [viewContext, setViewContext] = useState(false);
     const [imageId, setImageId] = useState(false);
     const [imageUrlArray, setImageUrlArray] = useState([]);
+    const [openNewModal, setNewOpenModal] = useState(false);
+
+    console.log("openmodal");
+    console.log(openNewModal);
+    const Backdrop = (props) => {
+        return <div className="backdrop"/>;
+    };
+    
+    const ModalOverlay = (props) => {
+        return (
+            <div className='modal-card'>
+                <header className="header">
+                    <h2>Feedback</h2>
+                </header>
+                <div className="content">
+                    <Avatar name = {props.name} imageUrl = {props.imageUrl} onModalClick={false}/>
+                    <div class="input-group mb-3">
+                        <button class="btn btn-outline-primary" type="button" id="button-addon1" onClick={function(){handleFeedback(props.name, props.pageImageUrl, document.getElementById('comment-textarea').value)}}>Send Feedback</button>
+                        <textarea id="comment-textarea" class="form-control" aria-label="With textarea" placeholder="Enter the comment"></textarea>
+                    </div>
+                </div>
+                <footer className="actions">
+                    <Button onClick={() => {setNewOpenModal(false)}}>Close</Button>
+                </footer>
+            </div>
+        );
+    };
+
+    function handleFeedback(name, image_url, comment){
+        console.log(name);
+        console.log(image_url);
+        console.log(comment);
+        axios({
+            method:'post',
+            url:`${basePath}/task.php?task=update_feedback`,
+            data: {
+                name: name,
+                image_url: image_url,
+                comment: comment
+            }
+        }).then((response) => {
+
+            var loadJson = {};
+
+            if(typeof response.data === "string"){
+                const jsonRegex = /{[^}]+}/;
+                const jsonMatch = response.data.match(jsonRegex);
+        
+                if (jsonMatch) {
+                    const jsonString = jsonMatch[0];
+                    loadJson = JSON.parse(jsonString);
+                }
+            }
+            else {
+                loadJson = response.data;
+            }
+            console.log(loadJson);
+
+        })
+        .catch((error) => {
+            console.log(error);
+        })
+    }
 
     function viewContextChange(view) {
         setViewContext(view);
@@ -156,6 +221,12 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
         })
     }
 
+    function modalHandler(img_url, name){
+        console.log(img_url);
+        console.log(name);
+        setNewOpenModal(true);
+    }
+
     function renderCompletedImages(imageId = null) {
 
         if(tempImages.length === 0){
@@ -185,7 +256,19 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
                                     >
                                     </TextArea>
                                     {alertId === image.image_id && alertOpen !== "" && <AlertModel altText={alertOpen} alertId = {image.image_id} alertId2={alertId} setAlertOpen={setAlertOpen} setAlertId={setAlertId} marginBottom = {"2rem"}/>}
-                                    {alertId !== image.image_id && <Avatar name = {(imageUrlArray.find(obj => obj.image_url === image.image_url))? (imageUrlArray.find(obj => obj.image_url === image.image_url)).alttext_updated_user:""} imageUrl = {(imageUrlArray.find(obj => obj.image_url === image.image_url))? (imageUrlArray.find(obj => obj.image_url === image.image_url)).user_url:""}/>}
+                                    {alertId !== image.image_id && <Avatar name = {(imageUrlArray.find(obj => obj.image_url === image.image_url))? (imageUrlArray.find(obj => obj.image_url === image.image_url)).alttext_updated_user:""} imageUrl = {(imageUrlArray.find(obj => obj.image_url === image.image_url))? (imageUrlArray.find(obj => obj.image_url === image.image_url)).user_url:""} onModalClick={modalHandler}/>}
+                                    {openNewModal && ReactDOM.createPortal(
+                                        <Backdrop/>,
+                                        document.getElementById('backdrop-root')
+                                    )}
+                                    {openNewModal && ReactDOM.createPortal(
+                                        <ModalOverlay
+                                        name = {(imageUrlArray.find(obj => obj.image_url === image.image_url))? (imageUrlArray.find(obj => obj.image_url === image.image_url)).alttext_updated_user:""}
+                                        imageUrl = {(imageUrlArray.find(obj => obj.image_url === image.image_url))? (imageUrlArray.find(obj => obj.image_url === image.image_url)).user_url:""}
+                                        pageImageUrl = {image.image_url}
+                                        />,
+                                        document.getElementById('overlay-root')
+                                    )}
                                     <div className='container-fluid' style={{"marginBottom":"1rem"}}>
                                         {console.log(image.is_decorative)}
                                         <Checkbox 
@@ -245,37 +328,39 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
     }
 
     return (
-        <div className='container-fluid'>
+        <>
             <div className='container-fluid'>
-                {!viewContext && <h2 style={{marginBottom:'2rem', marginTop:'1rem'}}>Reviewing: {courseUnderReview.courseName} <span style={{ float:'right'}}><Button color='success' onClick={() => {handleInternalPublish()}} >Publish</Button><button type="button" class="btn btn-outline-primary" style={{marginLeft:'0.5rem'}} onClick = {onDismiss}><i class="fa-solid fa-xmark" style={{padding:"0rem", fontSize:'1.5rem'}}></i></button></span></h2>}
-            </div>
-            <div className='container-fluid'>
-                {!viewContext &&
-                    (completedImages.length > 0 ? (
-                        <Grid>
-                            {renderCompletedImages()}
-                        </Grid>
-                        ) : (
-                            <Alert
-                                variant='error'
-                                margin='small'>
-                                No completed, unpublished images for this course.
-                            </Alert>
+                <div className='container-fluid'>
+                    {!viewContext && <h2 style={{marginBottom:'2rem', marginTop:'1rem'}}>Reviewing: {courseUnderReview.courseName} <span style={{ float:'right'}}><Button color='success' onClick={() => {handleInternalPublish()}} >Publish</Button><button type="button" class="btn btn-outline-primary" style={{marginLeft:'0.5rem'}} onClick = {onDismiss}><i class="fa-solid fa-xmark" style={{padding:"0rem", fontSize:'1.5rem'}}></i></button></span></h2>}
+                </div>
+                <div className='container-fluid'>
+                    {!viewContext &&
+                        (completedImages.length > 0 ? (
+                            <Grid>
+                                {renderCompletedImages()}
+                            </Grid>
+                            ) : (
+                                <Alert
+                                    variant='error'
+                                    margin='small'>
+                                    No completed, unpublished images for this course.
+                                </Alert>
+                            )
                         )
-                    )
-                }
+                    }
 
-                { viewContext &&                 
-                                <div id='home-container'>
-                                    <div className='space-children' id="div1">
-                                        {renderCompletedImages(imageId)}
+                    { viewContext &&                 
+                                    <div id='home-container'>
+                                        <div className='space-children' id="div1">
+                                            {renderCompletedImages(imageId)}
+                                        </div>
+                                        {<i class="fa-solid fa-circle-xmark fa-2x" style={{padding:"0rem"}} onClick={() => {setImageId("");setViewContext(false)}}></i>}
+                                        {<ContextPage imageId={imageId} modalOpen={viewContext} onViewContextChange={viewContextChange} basePath={basePath} />}        
                                     </div>
-                                    {<i class="fa-solid fa-circle-xmark fa-2x" style={{padding:"0rem"}} onClick={() => {setImageId("");setViewContext(false)}}></i>}
-                                    {<ContextPage imageId={imageId} modalOpen={viewContext} onViewContextChange={viewContextChange} basePath={basePath} />}        
-                                </div>
 
-                }
+                    }
+                </div>
             </div>
-        </div>
+        </>
     )
 }

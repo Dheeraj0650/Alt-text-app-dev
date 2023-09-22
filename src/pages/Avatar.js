@@ -12,6 +12,7 @@ export default function AvatarChips(props) {
                 label={props.name}
                 variant="outlined"
             />
+            {props.onModalClick && <button type="button" class="btn btn-outline-primary feedback-class" onClick={props.onModalClick}>feedback</button>}
         </Stack>
     </div>
 

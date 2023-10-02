@@ -8,6 +8,7 @@ import AlertModel from './Alert';
 
 import axios from 'axios';
 import ButtonGroup from './ButtonGroup';
+import Chip from '@mui/material/Chip';
 
 export default function ImageEditor(props) {
   const [imgUrl, setImgUrl] = useState();
@@ -26,6 +27,7 @@ export default function ImageEditor(props) {
   const [viewContext, setViewContext] = useState(false);
   const [isTextAreaInline, setIsTextAreaInline] = useState(true);
   const [advancedType, setAdvancedType] = useState();
+  const [imageName, setImageName] = useState("");
 
   const [username, setUserName] = useState("");
   const [userimage, setUserImage] = useState("");
@@ -63,6 +65,41 @@ export default function ImageEditor(props) {
         .catch((error) => {
           console.log(error);
         })
+  }
+
+
+  function getImageName(currentImageId){
+    console.log(currentImageId);
+      axios({ 
+        method:'post',
+        url:`${props.basePath}/task.php?task=get_image_name`,
+        data: {
+          image_id: currentImageId
+        }
+      })
+      .then((response) => {
+
+        var loadJson = {};
+
+        if(typeof response.data === "string"){
+          const jsonRegex = /{[^}]+}/;
+          const jsonMatch = response.data.match(jsonRegex);
+    
+          if (jsonMatch) {
+            const jsonString = jsonMatch[0];
+            loadJson = JSON.parse(jsonString);
+          }
+        }
+        else {
+          loadJson = response.data;
+        }
+
+        setImageName(loadJson.display_name);
+
+      })
+      .catch((error) => {
+        console.log(error);
+      })
   }
   
   useEffect(()=>{
@@ -229,6 +266,7 @@ export default function ImageEditor(props) {
                   setCurrentImageId(getImageJson.image_id);
                   setViewContext(false);
                   setViewContext(true);
+                  getImageName(getImageJson.image_id);
                 }
                 else if (getImageJson.no_images) {
                   setLoadError("No images left in queue");
@@ -253,6 +291,7 @@ export default function ImageEditor(props) {
               setCurrentImageId(getImageJson.image_id);
               setViewContext(false);
               setViewContext(true);
+              getImageName(getImageJson.image_id);
             }
             else if (getImageJson.no_images) {
               setLoadError("No images left in queue");
@@ -522,6 +561,7 @@ export default function ImageEditor(props) {
         <div className='buttonGroup'>
           {<ButtonGroup courses = {activeCourseList} handleChange = {handleChange} selectedCourse={selectedCourse}/>}
         </div>
+        <Chip label={<span style={{"color":"black"}}> <b>Image Name :</b> {imageName}</span>} color="primary" variant="outlined" />
         {imgUrl ?
           <div id="image-container" style={{ height: imageHeight }}>
             <img id="main-image" src={imgUrl} alt="image pulled" ref={imageRef} onLoad={handleImageLoad} />
@@ -586,7 +626,7 @@ export default function ImageEditor(props) {
           onClick={() => setUnusableModalOpen(true)}
           interaction={inputDisabled ? "disabled" : "enabled"}
         >
-          Mark as Unusable
+          On Hold
         </Button>
         }
         

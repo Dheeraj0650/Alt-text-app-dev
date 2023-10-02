@@ -6,7 +6,20 @@ import AlertModel from './Alert';
 import Avatar from './Avatar';
 import ContextPage from './ContextPage';
 import axios from 'axios';
+import Chip from '@mui/material/Chip';
+import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
+import { styled } from '@mui/material/styles';
 
+const BootstrapTooltip = styled(({ className, ...props }) => (
+    <Tooltip {...props} arrow classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.arrow}`]: {
+      color: theme.palette.common.black,
+    },
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: theme.palette.common.black,
+    },
+  }));
   
 export default function ReviewModal({ basePath, open, onDismiss, courseUnderReview, completedImages, setCompletedImages, handlePublish }) {
     const [tempImages, setTempImages] = useState([]);
@@ -18,6 +31,7 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
     const [imageId, setImageId] = useState(false);
     const [imageUrlArray, setImageUrlArray] = useState([]);
     const [openNewModal, setNewOpenModal] = useState(false);
+    // const [imageName, setImageName] = useState("");
 
     console.log("openmodal");
     console.log(openNewModal);
@@ -25,6 +39,41 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
         return <div className="backdrop"/>;
     };
     
+
+    // function getImageName(currentImageId){
+    //     console.log(currentImageId);
+    //     axios({ 
+    //         method:'post',
+    //         url:`${props.basePath}/task.php?task=get_image_name`,
+    //         data: {
+    //         image_id: currentImageId
+    //         }
+    //     })
+    //     .then((response) => {
+
+    //         var loadJson = {};
+
+    //         if(typeof response.data === "string"){
+    //         const jsonRegex = /{[^}]+}/;
+    //         const jsonMatch = response.data.match(jsonRegex);
+        
+    //         if (jsonMatch) {
+    //             const jsonString = jsonMatch[0];
+    //             loadJson = JSON.parse(jsonString);
+    //         }
+    //         }
+    //         else {
+    //         loadJson = response.data;
+    //         }
+
+    //         setImageName(loadJson.display_name);
+
+    //     })
+    //     .catch((error) => {
+    //         console.log(error);
+    //     })
+    // }
+
     const ModalOverlay = (props) => {
         return (
             <div className='modal-card'>
@@ -245,6 +294,9 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
                 return (
                     <Grid.Col width={4} key={image.image_url}>
                         <Flex direction='column'>
+                            <BootstrapTooltip title="Click on name to copy it to clipboard">
+                                <Chip label={<span style={{"color":"black"}}> <b>Image Name :</b> <span onClick={() => {navigator.clipboard.writeText(image.image_name)}}>{image.image_name}</span> </span>} color="primary" variant="outlined" />
+                            </BootstrapTooltip>
                             <div class="card border-warning">
                                 <div class="card-body">
                                     <Img src={image.image_url} alt="Image got removed from the course"/>
@@ -286,26 +338,28 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
                                             // disabled={inputDisabled}
                                         />
                                     </div>
-                                    <button type="button" class="btn btn-outline-primary" onClick={() => {setImageId(image.image_id);setViewContext(true);}}>View Context</button>
-                                    <Button
-                                        color='success'
-                                        margin='xxx-small'
-                                        onClick={
-                                            (event) => {
-                                                    if (image.alt_text.indexOf("'") !== -1 || image.alt_text.indexOf("\"") !== -1) {
-                                                        setAlertId(image.image_id);
-                                                        setAlertOpen("Alt text shouldn't contain quotes or apostrophes");
-                                                    } else {
-                                                        // getUserDetails(image.image_url);
-                                                        setAlertId(image.image_id);
-                                                        handleUpdateAltText(event, image.image_url, image.alt_text, image.is_decorative);
-                                                        setAlertOpen("Successfully updated Alt text with " + image.alt_text);
+                                    <div className='container-fluid review-page-button'>
+                                        <button type="button" class="btn btn-outline-primary" onClick={() => {setImageId(image.image_id);setViewContext(true);}}>View Context</button>
+                                        <Button
+                                            color='success'
+                                            margin='xxx-small'
+                                            onClick={
+                                                (event) => {
+                                                        if (image.alt_text.indexOf("'") !== -1 || image.alt_text.indexOf("\"") !== -1) {
+                                                            setAlertId(image.image_id);
+                                                            setAlertOpen("Alt text shouldn't contain quotes or apostrophes");
+                                                        } else {
+                                                            // getUserDetails(image.image_url);
+                                                            setAlertId(image.image_id);
+                                                            handleUpdateAltText(event, image.image_url, image.alt_text, image.is_decorative);
+                                                            setAlertOpen("Successfully updated Alt text with " + image.alt_text);
+                                                        }
                                                     }
-                                                }
-                                        }
-                                    >
-                                        Update Alt Text
-                                    </Button>
+                                            }
+                                        >
+                                            Update Alt Text
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </Flex>

@@ -150,15 +150,7 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
             onRequestSort={onSort}
             sortDirection={sortBy === 'total_images' ? direction : 'none'}
           >
-            Number of Images ({noOfImages})
-          </Table.ColHeader>
-
-          <Table.ColHeader 
-            id='completed_images' 
-            onRequestSort={onSort}
-            sortDirection={sortBy === 'completed_images' ? direction : 'none'}
-          >
-            Completed Images ({completedImages})
+            Total ({noOfImages})
           </Table.ColHeader>
 
           <Table.ColHeader 
@@ -166,7 +158,7 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
             onRequestSort={onSort}
             sortDirection={sortBy === 'published_images' ? direction : 'none'}
           >
-            Published Images ({publishedImages})
+            Published ({publishedImages})
           </Table.ColHeader>
 
           <Table.ColHeader 
@@ -174,9 +166,24 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
             onRequestSort={onSort}
             sortDirection={sortBy === 'images_to_publish' ? direction : 'none'}
           >
-            Images to Publish ({imagesToPublish})
+            Ready to Publish ({imagesToPublish})
           </Table.ColHeader>
 
+          <Table.ColHeader 
+            id='completed_images' 
+            onRequestSort={onSort}
+            sortDirection={sortBy === 'completed_images' ? direction : 'none'}
+          >
+            Advanced ({0})
+          </Table.ColHeader>
+
+          <Table.ColHeader 
+            id='completed_images' 
+            onRequestSort={onSort}
+            sortDirection={sortBy === 'completed_images' ? direction : 'none'}
+          >
+            In Progress ({0})
+          </Table.ColHeader>
 
           <Table.ColHeader id='review'>Review</Table.ColHeader>
 
@@ -189,11 +196,12 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
             if((courseFilter === "") || (courseFilter !== "" && course.name && course.name.toLowerCase().replaceAll(" ", "").includes(courseFilter.toLowerCase().replaceAll(" ", "")))){
               return (
                 <Table.Row key={course.id}>
-                  <Table.RowHeader id={course.id}>{course.name}</Table.RowHeader>
+                  <Table.RowHeader id={course.id}><a target="_blank" href={"https://usu.instructure.com/courses/" + course.id}>{course.name}</a></Table.RowHeader>
                   <Table.Cell>{course.total_images}</Table.Cell>
-                  <Table.Cell>{course.completed_images}</Table.Cell>
                   <Table.Cell>{course.published_images}</Table.Cell>
                   <Table.Cell>{course.completed_images - course.published_images}</Table.Cell>
+                  <Table.Cell>{1}</Table.Cell>
+                  <Table.Cell>{2}</Table.Cell>
                   <Table.Cell><Button color='secondary' onClick={() => handleReview(course.id, course.name)}>Review</Button></Table.Cell>
                   <Table.Cell><Button color='secondary' onClick={() => handlePublish(course.id)}>Publish</Button></Table.Cell>
                 </Table.Row>

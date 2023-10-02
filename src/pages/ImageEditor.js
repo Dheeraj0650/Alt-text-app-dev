@@ -9,6 +9,20 @@ import AlertModel from './Alert';
 import axios from 'axios';
 import ButtonGroup from './ButtonGroup';
 import Chip from '@mui/material/Chip';
+import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
+import { styled } from '@mui/material/styles';
+
+const BootstrapTooltip = styled(({ className, ...props }) => (
+    <Tooltip {...props} arrow classes={{ popper: className }} />
+  ))(({ theme }) => ({
+    [`& .${tooltipClasses.arrow}`]: {
+      color: theme.palette.common.black,
+    },
+    [`& .${tooltipClasses.tooltip}`]: {
+      backgroundColor: theme.palette.common.black,
+      fontSize: 15
+    },
+  }));
 
 export default function ImageEditor(props) {
   const [imgUrl, setImgUrl] = useState();
@@ -35,6 +49,7 @@ export default function ImageEditor(props) {
   const [activeCourseList, setActiveCourseList] = useState([]);
   const [selectedCourse, setSelectedCourse] = useState("All Courses");
   const [alertOpen, setAlertOpen] = useState("");
+  
 
   function getUserDetails(){
       axios({
@@ -68,39 +83,39 @@ export default function ImageEditor(props) {
   }
 
 
-  function getImageName(currentImageId){
-    console.log(currentImageId);
-      axios({ 
-        method:'post',
-        url:`${props.basePath}/task.php?task=get_image_name`,
-        data: {
-          image_id: currentImageId
-        }
-      })
-      .then((response) => {
+  // function getImageName(currentImageId){
+  //   console.log(currentImageId);
+  //     axios({ 
+  //       method:'post',
+  //       url:`${props.basePath}/task.php?task=get_image_name`,
+  //       data: {
+  //         image_id: currentImageId
+  //       }
+  //     })
+  //     .then((response) => {
 
-        var loadJson = {};
+  //       var loadJson = {};
 
-        if(typeof response.data === "string"){
-          const jsonRegex = /{[^}]+}/;
-          const jsonMatch = response.data.match(jsonRegex);
+  //       if(typeof response.data === "string"){
+  //         const jsonRegex = /{[^}]+}/;
+  //         const jsonMatch = response.data.match(jsonRegex);
     
-          if (jsonMatch) {
-            const jsonString = jsonMatch[0];
-            loadJson = JSON.parse(jsonString);
-          }
-        }
-        else {
-          loadJson = response.data;
-        }
+  //         if (jsonMatch) {
+  //           const jsonString = jsonMatch[0];
+  //           loadJson = JSON.parse(jsonString);
+  //         }
+  //       }
+  //       else {
+  //         loadJson = response.data;
+  //       }
 
-        setImageName(loadJson.display_name);
+  //       setImageName(loadJson.display_name);
 
-      })
-      .catch((error) => {
-        console.log(error);
-      })
-  }
+  //     })
+  //     .catch((error) => {
+  //       console.log(error);
+  //     })
+  // }
   
   useEffect(()=>{
     getUserDetails();
@@ -266,7 +281,7 @@ export default function ImageEditor(props) {
                   setCurrentImageId(getImageJson.image_id);
                   setViewContext(false);
                   setViewContext(true);
-                  getImageName(getImageJson.image_id);
+                  setImageName(getImageJson.image_name);
                 }
                 else if (getImageJson.no_images) {
                   setLoadError("No images left in queue");
@@ -291,7 +306,7 @@ export default function ImageEditor(props) {
               setCurrentImageId(getImageJson.image_id);
               setViewContext(false);
               setViewContext(true);
-              getImageName(getImageJson.image_id);
+              setImageName(getImageJson.image_name);
             }
             else if (getImageJson.no_images) {
               setLoadError("No images left in queue");
@@ -561,7 +576,9 @@ export default function ImageEditor(props) {
         <div className='buttonGroup'>
           {<ButtonGroup courses = {activeCourseList} handleChange = {handleChange} selectedCourse={selectedCourse}/>}
         </div>
-        <Chip label={<span style={{"color":"black"}}> <b>Image Name :</b> {imageName}</span>} color="primary" variant="outlined" />
+        <BootstrapTooltip title="Click on name to copy it to clipboard">
+          <Chip label={<span style={{"color":"black"}}> <b>Image Name :</b> <span onClick={() => {navigator.clipboard.writeText(imageName)}}>{imageName}</span></span>} color="primary" variant="outlined" />
+        </BootstrapTooltip>
         {imgUrl ?
           <div id="image-container" style={{ height: imageHeight }}>
             <img id="main-image" src={imgUrl} alt="image pulled" ref={imageRef} onLoad={handleImageLoad} />

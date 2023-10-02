@@ -18,6 +18,7 @@ const BootstrapTooltip = styled(({ className, ...props }) => (
     },
     [`& .${tooltipClasses.tooltip}`]: {
       backgroundColor: theme.palette.common.black,
+      fontSize: 15
     },
   }));
   
@@ -31,7 +32,6 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
     const [imageId, setImageId] = useState(false);
     const [imageUrlArray, setImageUrlArray] = useState([]);
     const [openNewModal, setNewOpenModal] = useState(false);
-    // const [imageName, setImageName] = useState("");
 
     console.log("openmodal");
     console.log(openNewModal);
@@ -385,7 +385,7 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
         <>
             <div className='container-fluid'>
                 <div className='container-fluid'>
-                    {!viewContext && <h2 style={{marginBottom:'2rem', marginTop:'1rem'}}>Reviewing: {courseUnderReview.courseName} <span style={{ float:'right'}}><Button color='success' onClick={() => {handleInternalPublish()}} >Publish</Button><button type="button" class="btn btn-outline-primary" style={{marginLeft:'0.5rem'}} onClick = {onDismiss}><i class="fa-solid fa-xmark" style={{padding:"0rem", fontSize:'1.5rem'}}></i></button></span></h2>}
+                    {!viewContext && <h2 style={{marginBottom:'2rem', marginTop:'1rem'}}>Reviewing: {courseUnderReview.courseName} <span style={{ float:'right'}}><Button color='success' onClick={() => {handleInternalPublish()}} >Publish All</Button><button type="button" class="btn btn-outline-primary" style={{marginLeft:'0.5rem'}} onClick = {onDismiss}><i class="fa-solid fa-xmark" style={{padding:"0rem", fontSize:'1.5rem'}}></i></button></span></h2>}
                 </div>
                 <div className='container-fluid'>
                     {!viewContext &&

@@ -1,7 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Text, ScreenReaderContent } from "@instructure/ui";
+import Tooltip, { tooltipClasses } from '@mui/material/Tooltip';
+import { styled } from '@mui/material/styles';
 
-import axios from 'axios';
+const BootstrapTooltip = styled(({ className, ...props }) => (
+  <Tooltip {...props} arrow classes={{ popper: className }}/>
+))(({ theme }) => ({
+  [`& .${tooltipClasses.arrow}`]: {
+    color: theme.palette.common.black,
+  },
+  [`& .${tooltipClasses.tooltip}`]: {
+    backgroundColor: theme.palette.common.black,
+    fontSize: 15
+  },
+}));
 
 export default function CoursesTable({basePath, courses, loadTable, setCourses, handleReview, setIsLoading, setPushMessage, handlePublish, courseFilter}) {
   
@@ -12,8 +24,11 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
   const [completedImages, setCompletedImages] = useState(0);
   const [publishedImages, setPublishedImages] = useState(0);
   const [imagesToPublish, setImagesToPublish] = useState(0);
+  const [advancedImagesToPublish, setAdvancedImagesToPublish] = useState(0);
+  const [availableToPublish, setAvailableToPublish] = useState(0);
 
   const direction = ascending ? 'ascending' : 'descending';
+  
 
   useEffect(() => {    
     loadTable();
@@ -24,6 +39,8 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
     var val2 = 0;
     var val3 = 0;
     var val4 = 0;
+    var val5 = 0;
+    var val6 = 0;
 
     (courses || []).map(course => {
       if(course.total_images !== course.published_images){
@@ -31,12 +48,16 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
         val2 += parseInt(course.completed_images);
         val3 += parseInt(course.published_images);
         val4 += parseInt(course.completed_images) - parseInt(course.published_images);
+        val5 += parseInt(course.advanced_images);
+        val6 += parseInt(course.available_images);
       }
 
       setNoOfImages(val1);
       setCompletedImages(val2);
       setPublishedImages(val3);
       setImagesToPublish(val4);
+      setAdvancedImagesToPublish(val5);
+      setAvailableToPublish(val6);
     });
   }, [courses])
 
@@ -58,7 +79,9 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
     if (shouldReverse(id)) {
       let tempCourses = [...courses];
       tempCourses.sort((a, b) => {
-        return a[id].localeCompare(b[id]);
+        var num_a = a[id].padStart(8, '0');;
+        var num_b = b[id].padStart(8, '0');;
+        return num_a.localeCompare(num_b);
       });
 
       if (!localAscending) {
@@ -142,7 +165,9 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
             onRequestSort={onSort}
             sortDirection={sortBy === 'name' ? direction : 'none'}
           >
-            Course Name
+            <span>
+              Course Name 
+            </span>
           </Table.ColHeader>
 
           <Table.ColHeader 
@@ -150,7 +175,11 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
             onRequestSort={onSort}
             sortDirection={sortBy === 'total_images' ? direction : 'none'}
           >
-            Total ({noOfImages})
+            <BootstrapTooltip title="Total Images in Use without Alt Text">
+              <span> 
+                  <i class="fa-solid fa-circle-info"></i> &nbsp; Total ({noOfImages})
+              </span>
+            </BootstrapTooltip>
           </Table.ColHeader>
 
           <Table.ColHeader 
@@ -158,7 +187,11 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
             onRequestSort={onSort}
             sortDirection={sortBy === 'published_images' ? direction : 'none'}
           >
-            Published ({publishedImages})
+            <BootstrapTooltip title="Alt text added and published">
+              <span> 
+                  <i class="fa-solid fa-circle-info"></i> &nbsp; Published ({publishedImages})  
+              </span>
+            </BootstrapTooltip>
           </Table.ColHeader>
 
           <Table.ColHeader 
@@ -166,28 +199,54 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
             onRequestSort={onSort}
             sortDirection={sortBy === 'images_to_publish' ? direction : 'none'}
           >
-            Ready to Publish ({imagesToPublish})
+          <BootstrapTooltip title="Alt text has been added, but not published">
+            <span> 
+                <i class="fa-solid fa-circle-info"></i>  &nbsp; Ready to Publish ({imagesToPublish}) 
+            </span>
+          </BootstrapTooltip>
+
+          </Table.ColHeader>
+    
+          <Table.ColHeader 
+            id='advanced_images' 
+            onRequestSort={onSort}
+            sortDirection={sortBy === 'advanced_images' ? direction : 'none'}
+          >
+            <BootstrapTooltip title="Imaged have been marked as advanced, but do not have alt text">
+              <span> 
+                  <i class="fa-solid fa-circle-info"></i> Advanced ({advancedImagesToPublish}) &nbsp;
+              </span>
+            </BootstrapTooltip>
+
           </Table.ColHeader>
 
           <Table.ColHeader 
-            id='completed_images' 
+            id='available_images' 
             onRequestSort={onSort}
-            sortDirection={sortBy === 'completed_images' ? direction : 'none'}
+            sortDirection={sortBy === 'available_images' ? direction : 'none'}
           >
-            Advanced ({0})
+            <BootstrapTooltip title="Images that are currently in progress and not availalbe">
+              <span> 
+                  <i class="fa-solid fa-circle-info"></i>  &nbsp; In Progress ({availableToPublish}) 
+              </span>
+            </BootstrapTooltip>
           </Table.ColHeader>
 
-          <Table.ColHeader 
-            id='completed_images' 
-            onRequestSort={onSort}
-            sortDirection={sortBy === 'completed_images' ? direction : 'none'}
-          >
-            In Progress ({0})
+          <Table.ColHeader id='review'>
+            <BootstrapTooltip title="Shows images with alt text that have not bee published.">
+              <span> 
+                  <i class="fa-solid fa-circle-info"></i> &nbsp; Review
+              </span>
+            </BootstrapTooltip>
           </Table.ColHeader>
 
-          <Table.ColHeader id='review'>Review</Table.ColHeader>
-
-          <Table.ColHeader id='publish_course'>Publish Course</Table.ColHeader>
+          <Table.ColHeader id='publish_course'>
+            <BootstrapTooltip title="Publish all images with alt text from the course.">
+              <span> 
+                  <i class="fa-solid fa-circle-info"></i> &nbsp;  Publish All 
+              </span>
+            </BootstrapTooltip>
+          </Table.ColHeader>
         </Table.Row>
       </Table.Head>
       <Table.Body>
@@ -195,13 +254,13 @@ export default function CoursesTable({basePath, courses, loadTable, setCourses, 
           if(course.total_images !== course.published_images){
             if((courseFilter === "") || (courseFilter !== "" && course.name && course.name.toLowerCase().replaceAll(" ", "").includes(courseFilter.toLowerCase().replaceAll(" ", "")))){
               return (
-                <Table.Row key={course.id}>
-                  <Table.RowHeader id={course.id}><a target="_blank" href={"https://usu.instructure.com/courses/" + course.id}>{course.name}</a></Table.RowHeader>
-                  <Table.Cell>{course.total_images}</Table.Cell>
-                  <Table.Cell>{course.published_images}</Table.Cell>
-                  <Table.Cell>{course.completed_images - course.published_images}</Table.Cell>
-                  <Table.Cell>{1}</Table.Cell>
-                  <Table.Cell>{2}</Table.Cell>
+                <Table.Row key={parseInt(course.id)}>
+                  <Table.RowHeader id={parseInt(course.id)}><a target="_blank" href={"https://usu.instructure.com/courses/" + course.id}>{course.name}</a></Table.RowHeader>
+                  <Table.Cell>{parseInt(course.total_images)}</Table.Cell>
+                  <Table.Cell>{parseInt(course.published_images)}</Table.Cell>
+                  <Table.Cell>{parseInt(course.completed_images) - parseInt(course.published_images)}</Table.Cell>
+                  <Table.Cell>{parseInt(course.advanced_images)}</Table.Cell>
+                  <Table.Cell>{parseInt(course.available_images)}</Table.Cell>
                   <Table.Cell><Button color='secondary' onClick={() => handleReview(course.id, course.name)}>Review</Button></Table.Cell>
                   <Table.Cell><Button color='secondary' onClick={() => handlePublish(course.id)}>Publish</Button></Table.Cell>
                 </Table.Row>

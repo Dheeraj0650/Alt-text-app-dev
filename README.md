@@ -41,8 +41,8 @@ The workflow of the Alternative Text Tool consists of the following four main pa
 3. **Advanced Images Page**: Here, more expert users can add alt text to complex images or put them on hold for further review.
 ![Screenshot 2023-10-23 at 5 08 44 PM](https://github.com/usu-accessibility/AltTextApp/assets/41461773/82456c21-24ce-41c0-a6f1-2ce3a6791e45)
 
-4. **Load Images Page**: Users load course images into the Alternative Text Tool using the course ID.
-![Screenshot 2023-10-23 at 5 08 53 PM](https://github.com/usu-accessibility/AltTextApp/assets/41461773/698a7554-0ed1-4d2b-9bc0-7d7a5e87371f)
+4. **Load Images Page**: Users load course images into the Alternative Text Tool using the course ID and we can also load images from monday board by changing the status tag to "Load Images".
+![Screenshot 2023-10-23 at 5 08 53 PM](https://github.com/usu-accessibility/AltTextApp/assets/41461773/698a7554-0ed1-4d2b-9bc0-7d7a5e87371f) ![Screenshot 2023-10-23 at 5 16 58 PM](https://github.com/usu-accessibility/AltTextApp/assets/41461773/2934b11a-37be-412f-a5b7-ed311f1976b1)
 
 5. **Review & Publish Page**: Admins can review the alt text added by users and publish it back to the Canvas course.
 ![Screenshot 2023-10-23 at 5 09 19 PM](https://github.com/usu-accessibility/AltTextApp/assets/41461773/aad31345-17e6-4211-bbfb-58498d4fce7b) ![Screenshot 2023-10-23 at 5 09 55 PM](https://github.com/usu-accessibility/AltTextApp/assets/41461773/94aa3fb6-c6a5-4aa2-955d-03a80f066969)

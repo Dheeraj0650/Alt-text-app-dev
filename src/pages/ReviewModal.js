@@ -33,8 +33,6 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
     const [imageUrlArray, setImageUrlArray] = useState([]);
     const [openNewModal, setNewOpenModal] = useState(false);
 
-    console.log("openmodal");
-    console.log(openNewModal);
     const Backdrop = (props) => {
         return <div className="backdrop"/>;
     };
@@ -95,9 +93,6 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
     };
 
     function handleFeedback(name, image_url, comment){
-        console.log(name);
-        console.log(image_url);
-        console.log(comment);
         axios({
             method:'post',
             url:`${basePath}/task.php?task=update_feedback`,
@@ -122,7 +117,6 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
             else {
                 loadJson = response.data;
             }
-            console.log(loadJson);
 
         })
         .catch((error) => {
@@ -271,8 +265,6 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
     }
 
     function modalHandler(img_url, name){
-        console.log(img_url);
-        console.log(name);
         setNewOpenModal(true);
     }
 
@@ -322,7 +314,6 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
                                         document.getElementById('overlay-root')
                                     )}
                                     <div className='container-fluid' style={{"marginBottom":"1rem"}}>
-                                        {console.log(image.is_decorative)}
                                         <Checkbox 
                                             id={"isDecorative-checkbox-" + image.image_id}
                                             label="Mark Image as Decorative" 
@@ -330,9 +321,7 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
                                             inline={true}
                                             checked={image.is_decorative}
                                             onChange={()=>{
-                                                console.log(image.is_decorative);
                                                 image.is_decorative = !image.is_decorative;
-                                                console.log(image.is_decorative);
                                                 setChangeUI(!changeUI);
                                             }}
                                             // disabled={inputDisabled}

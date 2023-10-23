@@ -23,7 +23,6 @@ export default function ReviewPublishPage(props) {
   const [courseFilter, setCourseFilter] = useState("");
 
   function handleFilterChange(e){
-    console.log(e.target.value);
     setCourseFilter(e.target.value.trim());
   }
 

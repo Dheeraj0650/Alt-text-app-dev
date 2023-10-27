@@ -442,6 +442,8 @@ export default function ImageEditor(props) {
           resetView();
         }
         else {
+          lockImage(false);
+          getActiveCourseImages();
           getImage();
           clearInput();
         }
@@ -463,7 +465,6 @@ export default function ImageEditor(props) {
       }
     })
     .then((response) => {
-
       var loadJson = {};
 
       if(typeof response.data === "string"){
@@ -484,6 +485,8 @@ export default function ImageEditor(props) {
         resetView();
       }
       else {
+        lockImage(false);
+        getActiveCourseImages();
         getImage();
         clearInput();
       }
@@ -640,10 +643,10 @@ export default function ImageEditor(props) {
           <Button
           id="unusable-btn"
           color="secondary"
-          onClick={() => setUnusableModalOpen(true)}
+          onClick={markImageAsUnusable}
           interaction={inputDisabled ? "disabled" : "enabled"}
         >
-          On Hold
+          Needs Conversion
         </Button>
         }
         
@@ -730,7 +733,7 @@ export default function ImageEditor(props) {
       </Modal.Footer>
     </Modal>
 
-    <Modal
+    {/* <Modal
       id="unusable-modal"
       open={unusableModalOpen}
       size="small"
@@ -749,7 +752,7 @@ export default function ImageEditor(props) {
         <Button color="secondary" onClick={() => setUnusableModalOpen(false)}>Cancel</Button>&nbsp;
         <Button color="danger" onClick={markImageAsUnusable}>Submit</Button>
       </Modal.Footer>
-    </Modal>
+    </Modal> */}
 
     <Overlay 
       id="loading-overlay"

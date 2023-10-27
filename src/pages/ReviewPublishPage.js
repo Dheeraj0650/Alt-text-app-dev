@@ -26,13 +26,21 @@ export default function ReviewPublishPage(props) {
     setCourseFilter(e.target.value.trim());
   }
 
-  function updateMondayBoard(courseId, pushed_images){
+  function updateMondayBoard(courseId, pushed_images, needs_conversion){
     for(var idx = 0; idx < courses.length;idx++){
+      console.log(courses[idx].id)
+      console.log(courseId)
+      console.log(courses[idx])
+      console.log(courses[idx].total_images)
+      console.log((Number(courses[idx].published_images) + pushed_images).toString());
+
       if(courses[idx].id === courseId){
         if(courses[idx].total_images === (Number(courses[idx].published_images) + pushed_images).toString()){
+          console.log("innininininin");
           var data = {
             "course_id": courseId,
-            "action": "updateMondayBoard"
+            "action": "updateMondayBoard",
+            "needs_conversion": needs_conversion === "1" ? true:false
           };
       
           axios({
@@ -42,6 +50,21 @@ export default function ReviewPublishPage(props) {
           })
           .then(response => {
             // handle success
+            if( needs_conversion === "1"){
+              axios({
+                method:'post',
+                url:`${props.basePath}/task.php?task=release_needs_conversion`,
+                data: {
+                  course_id: courseId
+                }
+              })
+              .then((response) => {
+                console.log(response);
+              })
+              .catch((error) => {
+
+              })
+            }
           })
           .catch(error => {
             // handle error
@@ -52,7 +75,7 @@ export default function ReviewPublishPage(props) {
     }
   }
 
-  function loadTable(courseId = null, pushed_images) {
+  function loadTable(courseId = null, pushed_images, needs_conversion) {
     axios.get(
       `${props.basePath}/task.php?task=get_courses_info`
     )
@@ -76,7 +99,7 @@ export default function ReviewPublishPage(props) {
       setCourses(loadJson);
 
       if(courseId){
-        updateMondayBoard(courseId, pushed_images);
+        updateMondayBoard(courseId, pushed_images, needs_conversion);
       }
     })
   }
@@ -185,6 +208,7 @@ export default function ReviewPublishPage(props) {
         loadJson = response.data;
       }
 
+      console.log(loadJson)
       if ("failed_image_ids" in loadJson) {
         setPushMessage(`The alt text for ${loadJson.pushed_images} image${loadJson.pushed_images == 1 ? ' was' : 's were'} successfully updated within Canvas. The alt text for the following image ids failed to push to canvas: ${loadJson.failed_image_ids}`);
       }
@@ -195,7 +219,7 @@ export default function ReviewPublishPage(props) {
         setPushMessage(`Success! The alt text for ${loadJson.pushed_images} image${loadJson.pushed_images == 1 ? ' was' : 's were'} successfully updated within Canvas.`)
       }
 
-      loadTable(courseId, loadJson.pushed_images);
+      loadTable(courseId, loadJson.pushed_images, loadJson.needs_conversion);
 
     })
     .catch((error) => {
@@ -271,6 +295,7 @@ export default function ReviewPublishPage(props) {
       completedImages={completedImages}
       setCompletedImages={setCompletedImages}
       handlePublish={handlePublish}
+      handleReview={handleReview}
     />}
   </>
   )

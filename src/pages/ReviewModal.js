@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import {Checkbox, Grid, Img, Alert, Flex, TextArea, ScreenReaderContent, Button, Overlay } from '@instructure/ui';
+import {Mask, Spinner, Checkbox, Grid, Img, Alert, Flex, TextArea, ScreenReaderContent, Button, Overlay } from '@instructure/ui';
 import DOMPurify from 'dompurify';
 import AlertModel from './Alert';
 import Avatar from './Avatar';
@@ -22,7 +22,7 @@ const BootstrapTooltip = styled(({ className, ...props }) => (
     },
   }));
   
-export default function ReviewModal({ basePath, open, onDismiss, courseUnderReview, completedImages, setCompletedImages, handlePublish }) {
+export default function ReviewModal({ basePath, open, onDismiss, courseUnderReview, completedImages, setCompletedImages, handlePublish, handleReview}) {
     const [tempImages, setTempImages] = useState([]);
     const [alertOpen, setAlertOpen] = useState("");
     const [alertId, setAlertId] = useState("");
@@ -32,6 +32,7 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
     const [imageId, setImageId] = useState(false);
     const [imageUrlArray, setImageUrlArray] = useState([]);
     const [openNewModal, setNewOpenModal] = useState(false);
+    const [isLoadingReview, setIsLoadingReview] = useState(false);
 
     const Backdrop = (props) => {
         return <div className="backdrop"/>;
@@ -216,12 +217,52 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
           })
     }
 
-    function resetView() {
-        setSkipModalOpen(false);
-        setAdvancedModalOpen(false);
-        setUnusableModalOpen(false);
-        setIsLoading(false);
-      }
+    function markImageAsUnusable(currentImageId) {
+        setIsLoadingReview(true);
+        axios({
+          method:'post',
+          url:`${basePath}/task.php?task=mark_image_as_unusable`,
+          data: {
+            image_id: currentImageId
+          }
+        })
+        .then((response) => {
+          var loadJson = {};
+    
+          if(typeof response.data === "string"){
+            const jsonRegex = /{[^}]+}/;
+            const jsonMatch = response.data.match(jsonRegex);
+      
+            if (jsonMatch) {
+              const jsonString = jsonMatch[0];
+              loadJson = JSON.parse(jsonString);
+            }
+          }
+          else {
+            loadJson = response.data;
+          }
+
+          console.log(loadJson);
+          if (loadJson.error) {
+            setAlertId(currentImageId);
+            setAlertOpen("Failed to set to Needs Conversion");
+          }
+
+          setIsLoadingReview(false)
+          handleReview(loadJson.course_id, courseUnderReview.courseName)
+          getAltTextUpdatedUserDetails();
+          onDismiss();
+
+        })
+    
+    }
+
+    // function resetView() {
+    //     setSkipModalOpen(false);
+    //     setAdvancedModalOpen(false);
+    //     setUnusableModalOpen(false);
+    //     setIsLoading(false);
+    //   }
 
     const handleAltTextChange = (event, imageUrl) => {
         setTempImages(tempImages.map((image) => {
@@ -297,6 +338,7 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
                                         value={image.alt_text}
                                         onChange={(event) => handleAltTextChange(event, image.image_url)}
                                         placeholder="The image is marked as decorative"
+                                        maxHeight="10rem"
                                     >
                                     </TextArea>
                                     {alertId === image.image_id && alertOpen !== "" && <AlertModel altText={alertOpen} alertId = {image.image_id} alertId2={alertId} setAlertOpen={setAlertOpen} setAlertId={setAlertId} marginBottom = {"2rem"}/>}
@@ -329,6 +371,7 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
                                     </div>
                                     <div className='container-fluid review-page-button'>
                                         <button type="button" class="btn btn-outline-primary" onClick={() => {setImageId(image.image_id);setViewContext(true);}}>View Context</button>
+                                        <button type="button" class="btn btn-outline-primary" onClick={() => {markImageAsUnusable(image.image_id);}}>Needs Conversion</button>
                                         <Button
                                             color='success'
                                             margin='xxx-small'
@@ -404,6 +447,16 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
                     }
                 </div>
             </div>
+            <Overlay 
+                id="loading-overlay"
+                open={isLoadingReview} 
+                label="Skipping Image"  
+                shouldContainFocus 
+                > 
+                <Mask fullscreen>
+                    <Spinner renderTitle="Skipping Image" size="large" margin="auto" />
+                </Mask>
+            </Overlay>
         </>
     )
 }

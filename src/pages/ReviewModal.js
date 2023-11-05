@@ -271,7 +271,8 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
             return {
                 image_url: image.image_url,
                 alt_text: event.target.value,
-                image_id: image.image_id
+                image_id: image.image_id,
+                image_name: image.image_name
             }
         }));
     }
@@ -377,15 +378,15 @@ export default function ReviewModal({ basePath, open, onDismiss, courseUnderRevi
                                             margin='xxx-small'
                                             onClick={
                                                 (event) => {
-                                                        if (image.alt_text.indexOf("'") !== -1 || image.alt_text.indexOf("\"") !== -1) {
-                                                            setAlertId(image.image_id);
-                                                            setAlertOpen("Alt text shouldn't contain quotes or apostrophes");
-                                                        } else {
+                                                        // if (image.alt_text.indexOf("'") !== -1 || image.alt_text.indexOf("\"") !== -1) {
+                                                        //     setAlertId(image.image_id);
+                                                        //     setAlertOpen("Alt text shouldn't contain quotes or apostrophes");
+                                                        // } else {
                                                             // getUserDetails(image.image_url);
-                                                            setAlertId(image.image_id);
-                                                            handleUpdateAltText(event, image.image_url, image.alt_text, image.is_decorative);
-                                                            setAlertOpen("Successfully updated Alt text with " + image.alt_text);
-                                                        }
+                                                        setAlertId(image.image_id);
+                                                        handleUpdateAltText(event, image.image_url, image.alt_text, image.is_decorative);
+                                                        setAlertOpen("Successfully updated Alt text with " + image.alt_text);
+                                                        // }
                                                     }
                                             }
                                         >
